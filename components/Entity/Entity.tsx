@@ -13,9 +13,6 @@ export function Entity() {
       gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
     >
       <fog attach="fog" args={['#04050b', 4.6, 10]} />
-      <ambientLight intensity={0.28} color="#93a9ff" />
-      <directionalLight position={[2.5, 2, 4]} intensity={0.32} color="#f2d1a4" />
-      <pointLight position={[-3, -1, 2]} intensity={0.75} color="#6b88ff" distance={8} />
       <OrganicBlob />
       <Particles />
     </Canvas>

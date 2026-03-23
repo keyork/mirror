@@ -21,13 +21,16 @@ export default function Home() {
       <Entity />
 
       <div className="pointer-events-none fixed inset-0 z-[1]">
-        <div className="absolute left-[10%] top-[16%] h-40 w-40 rounded-full bg-[radial-gradient(circle,_rgba(137,166,255,0.14),_rgba(137,166,255,0))] blur-3xl" />
-        <div className="absolute bottom-[16%] right-[12%] h-48 w-48 rounded-full bg-[radial-gradient(circle,_rgba(236,191,121,0.1),_rgba(236,191,121,0))] blur-3xl" />
-        <div className="absolute inset-x-[14%] top-[8%] h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="absolute left-[7%] top-[12%] h-52 w-52 rounded-full bg-[radial-gradient(circle,_rgba(118,146,228,0.14),_rgba(118,146,228,0))] blur-3xl" />
+        <div className="absolute right-[8%] top-[18%] h-40 w-40 rounded-full bg-[radial-gradient(circle,_rgba(178,106,255,0.11),_rgba(178,106,255,0))] blur-3xl" />
+        <div className="absolute left-[18%] bottom-[18%] h-44 w-44 rounded-full bg-[radial-gradient(circle,_rgba(78,208,170,0.09),_rgba(78,208,170,0))] blur-3xl" />
+        <div className="absolute bottom-[12%] right-[14%] h-56 w-56 rounded-full bg-[radial-gradient(circle,_rgba(255,180,92,0.1),_rgba(255,180,92,0))] blur-3xl" />
+        <div className="absolute right-[26%] bottom-[24%] h-40 w-40 rounded-full bg-[radial-gradient(circle,_rgba(255,107,124,0.08),_rgba(255,107,124,0))] blur-3xl" />
+        <div className="absolute inset-x-[18%] top-[8%] h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
       </div>
 
-      <div className="pointer-events-none fixed inset-0 z-10 flex flex-col px-4 pb-6 pt-6 md:px-8 md:pb-8 md:pt-6">
-        <div className="mx-auto w-full max-w-6xl">
+      <div className="app-shell">
+        <div className="shell-max">
           <section className="panel-glass section-shell top-rail pointer-events-auto">
             <div className="top-rail-copy">
               <p className="orbital-label">镜 · {modeCopy.index} · {modeCopy.eyebrow}</p>
@@ -49,15 +52,15 @@ export default function Home() {
           </section>
         </div>
 
-        <div className="flex min-h-0 flex-1 items-stretch justify-center pt-4 md:pt-6">
-          <div className="pointer-events-auto flex h-full min-h-0 w-full max-w-[62rem] overflow-hidden">
+        <div className="stage-stack">
+          <div className="panel-stage">
             {mode === 'chat' && <ChatPanel />}
             {mode === 'constellation' && <ConstellPanel />}
             {mode === 'experiment' && <ExpPanel />}
           </div>
         </div>
 
-        <div className="pointer-events-auto pt-4 md:pt-5">
+        <div className="nav-stage">
           <ModeNav />
         </div>
       </div>

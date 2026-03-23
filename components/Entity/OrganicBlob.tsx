@@ -1,360 +1,390 @@
 'use client';
 
 import { useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { EntityState, useAppStore } from '@/stores/useAppStore';
+import { AppMode, EntityState, useAppStore } from '@/stores/useAppStore';
 
 type StateConfig = {
-  coreColor: [number, number, number];
-  glowColor: [number, number, number];
-  haloColor: [number, number, number];
-  breathAmp: number;
-  noiseScale: number;
-  deformStrength: number;
-  timeSpeed: number;
+  blueColor: string;
+  redColor: string;
+  greenColor: string;
+  violetColor: string;
+  goldColor: string;
+  coreColor: string;
+  dustColor: string;
   scale: number;
   y: number;
   opacity: number;
-  ringOpacity: number;
+  pulse: number;
+  drift: number;
+};
+
+type LayerConfig = {
+  texture: 'veil' | 'wisp' | 'core';
+  colorKey: 'blueColor' | 'redColor' | 'greenColor' | 'violetColor' | 'goldColor' | 'coreColor' | 'dustColor';
+  position: [number, number, number];
+  scale: [number, number, number];
+  rotation: number;
+  speed: number;
+  pulse: number;
+  opacity: number;
 };
 
 const stateConfigs: Record<EntityState, StateConfig> = {
   idle: {
-    coreColor: [0.78, 0.66, 0.54],
-    glowColor: [0.95, 0.74, 0.42],
-    haloColor: [0.58, 0.62, 1.0],
-    breathAmp: 0.045,
-    noiseScale: 1.5,
-    deformStrength: 0.18,
-    timeSpeed: 0.22,
+    blueColor: '#6f8fff',
+    redColor: '#ff6a7c',
+    greenColor: '#5fd7b1',
+    violetColor: '#a47cff',
+    goldColor: '#f0c45f',
+    coreColor: '#fff2c8',
+    dustColor: '#a4b1e5',
     scale: 1,
     y: 0.04,
-    opacity: 0.68,
-    ringOpacity: 0.26,
+    opacity: 1,
+    pulse: 0.05,
+    drift: 0.16,
   },
   listening: {
-    coreColor: [0.88, 0.74, 0.58],
-    glowColor: [1.0, 0.86, 0.54],
-    haloColor: [0.72, 0.77, 1.0],
-    breathAmp: 0.06,
-    noiseScale: 1.8,
-    deformStrength: 0.22,
-    timeSpeed: 0.35,
+    blueColor: '#83a1ff',
+    redColor: '#ff7a8e',
+    greenColor: '#74e0be',
+    violetColor: '#b08cff',
+    goldColor: '#f6cf71',
+    coreColor: '#fff6d6',
+    dustColor: '#b5c0ec',
     scale: 0.96,
-    y: 0.03,
-    opacity: 0.76,
-    ringOpacity: 0.34,
+    y: -0.04,
+    opacity: 1.12,
+    pulse: 0.06,
+    drift: 0.22,
   },
   responding: {
-    coreColor: [0.93, 0.81, 0.63],
-    glowColor: [1.0, 0.9, 0.68],
-    haloColor: [0.82, 0.72, 1.0],
-    breathAmp: 0.075,
-    noiseScale: 1.5,
-    deformStrength: 0.2,
-    timeSpeed: 0.28,
-    scale: 1.04,
+    blueColor: '#97b1ff',
+    redColor: '#ff8a95',
+    greenColor: '#7de7cc',
+    violetColor: '#bc9aff',
+    goldColor: '#ffd16e',
+    coreColor: '#fff7de',
+    dustColor: '#c0caf7',
+    scale: 1.03,
     y: 0.08,
-    opacity: 0.78,
-    ringOpacity: 0.38,
+    opacity: 1.18,
+    pulse: 0.07,
+    drift: 0.2,
   },
   deep: {
-    coreColor: [0.56, 0.58, 0.76],
-    glowColor: [0.7, 0.61, 0.92],
-    haloColor: [0.42, 0.5, 1.0],
-    breathAmp: 0.035,
-    noiseScale: 1.2,
-    deformStrength: 0.12,
-    timeSpeed: 0.15,
+    blueColor: '#6e7fd6',
+    redColor: '#c66cc7',
+    greenColor: '#4ebc9f',
+    violetColor: '#b68cff',
+    goldColor: '#b99fd9',
+    coreColor: '#e8deff',
+    dustColor: '#98a3d3',
     scale: 0.92,
-    y: -0.02,
-    opacity: 0.6,
-    ringOpacity: 0.22,
+    y: -0.06,
+    opacity: 0.9,
+    pulse: 0.04,
+    drift: 0.12,
   },
   constellation: {
-    coreColor: [0.46, 0.62, 0.85],
-    glowColor: [0.61, 0.81, 1.0],
-    haloColor: [0.62, 0.76, 1.0],
-    breathAmp: 0.03,
-    noiseScale: 1,
-    deformStrength: 0.1,
-    timeSpeed: 0.18,
-    scale: 0.82,
-    y: 0.3,
-    opacity: 0.54,
-    ringOpacity: 0.2,
+    blueColor: '#7da8ff',
+    redColor: '#cf84ff',
+    greenColor: '#69d8c5',
+    violetColor: '#c1a2ff',
+    goldColor: '#a9cbff',
+    coreColor: '#e6f2ff',
+    dustColor: '#9bb8e7',
+    scale: 0.84,
+    y: 0.24,
+    opacity: 0.8,
+    pulse: 0.035,
+    drift: 0.1,
   },
   experiment: {
-    coreColor: [0.91, 0.72, 0.52],
-    glowColor: [1.0, 0.82, 0.54],
-    haloColor: [0.54, 0.7, 1.0],
-    breathAmp: 0.05,
-    noiseScale: 1.4,
-    deformStrength: 0.16,
-    timeSpeed: 0.25,
-    scale: 0.96,
+    blueColor: '#7e9bff',
+    redColor: '#ff8376',
+    greenColor: '#74d9af',
+    violetColor: '#a782ff',
+    goldColor: '#ffc861',
+    coreColor: '#fff0c8',
+    dustColor: '#acb6e1',
+    scale: 0.98,
     y: 0.12,
-    opacity: 0.72,
-    ringOpacity: 0.3,
+    opacity: 1.06,
+    pulse: 0.055,
+    drift: 0.18,
   },
 };
 
-const vertexShader = `
-uniform float uTime;
-uniform float uBreathAmp;
-uniform float uNoiseScale;
-uniform float uDeformStrength;
-
-varying vec3 vNormal;
-varying vec3 vPosition;
-varying float vDisplacement;
-
-vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec4 permute(vec4 x) { return mod289(((x * 34.0) + 10.0) * x); }
-vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-
-float snoise(vec3 v) {
-  const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
-  const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-  vec3 i = floor(v + dot(v, C.yyy));
-  vec3 x0 = v - i + dot(i, C.xxx);
-  vec3 g = step(x0.yzx, x0.xyz);
-  vec3 l = 1.0 - g;
-  vec3 i1 = min(g.xyz, l.zxy);
-  vec3 i2 = max(g.xyz, l.zxy);
-  vec3 x1 = x0 - i1 + C.xxx;
-  vec3 x2 = x0 - i2 + C.yyy;
-  vec3 x3 = x0 - D.yyy;
-  i = mod289(i);
-  vec4 p = permute(permute(permute(
-    i.z + vec4(0.0, i1.z, i2.z, 1.0))
-    + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-    + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-  float n_ = 0.142857142857;
-  vec3 ns = n_ * D.wyz - D.xzx;
-  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-  vec4 x_ = floor(j * ns.z);
-  vec4 y_ = floor(j - 7.0 * x_);
-  vec4 x = x_ * ns.x + ns.yyyy;
-  vec4 y = y_ * ns.x + ns.yyyy;
-  vec4 h = 1.0 - abs(x) - abs(y);
-  vec4 b0 = vec4(x.xy, y.xy);
-  vec4 b1 = vec4(x.zw, y.zw);
-  vec4 s0 = floor(b0) * 2.0 + 1.0;
-  vec4 s1 = floor(b1) * 2.0 + 1.0;
-  vec4 sh = -step(h, vec4(0.0));
-  vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
-  vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
-  vec3 p0 = vec3(a0.xy, h.x);
-  vec3 p1 = vec3(a0.zw, h.y);
-  vec3 p2 = vec3(a1.xy, h.z);
-  vec3 p3 = vec3(a1.zw, h.w);
-  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-  p0 *= norm.x;
-  p1 *= norm.y;
-  p2 *= norm.z;
-  p3 *= norm.w;
-  vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-  m = m * m;
-  return 42.0 * dot(m * m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
-}
-
-void main() {
-  float noise = snoise(vec3(
-    position.x * uNoiseScale + uTime * 0.2,
-    position.y * uNoiseScale + uTime * 0.15,
-    position.z * uNoiseScale + uTime * 0.1
-  ));
-  float breath = sin(uTime * 0.6) * uBreathAmp;
-  float displacement = noise * uDeformStrength + breath;
-  vec3 newPosition = position + normal * displacement;
-  vNormal = normal;
-  vPosition = newPosition;
-  vDisplacement = displacement;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
-}
-`;
-
-const fragmentShader = `
-uniform vec3 uCoreColor;
-uniform vec3 uGlowColor;
-uniform float uOpacity;
-
-varying vec3 vNormal;
-varying vec3 vPosition;
-varying float vDisplacement;
-
-void main() {
-  vec3 viewDir = normalize(cameraPosition - vPosition);
-  float fresnel = 1.0 - dot(viewDir, vNormal);
-  fresnel = pow(fresnel, 2.3);
-  float pulse = smoothstep(-0.18, 0.24, vDisplacement);
-  vec3 color = mix(uCoreColor, uGlowColor, clamp(fresnel * 0.88 + pulse * 0.24, 0.0, 1.0));
-  float glow = smoothstep(0.0, 0.6, fresnel) * 0.72;
-  float alpha = (0.14 + glow + fresnel * 0.26 + pulse * 0.14) * uOpacity;
-  gl_FragColor = vec4(color, alpha);
-}
-`;
+const nebulaLayers: LayerConfig[] = [
+  {
+    texture: 'veil',
+    colorKey: 'blueColor',
+    position: [-0.54, 0.18, -0.1],
+    scale: [4.6, 2.45, 1],
+    rotation: 0.22,
+    speed: 0.11,
+    pulse: 0.8,
+    opacity: 0.23,
+  },
+  {
+    texture: 'veil',
+    colorKey: 'violetColor',
+    position: [0.6, -0.02, -0.14],
+    scale: [4.9, 2.7, 1],
+    rotation: -0.3,
+    speed: 0.09,
+    pulse: 1.05,
+    opacity: 0.21,
+  },
+  {
+    texture: 'wisp',
+    colorKey: 'redColor',
+    position: [0.18, -0.2, 0.04],
+    scale: [3.5, 1.95, 1],
+    rotation: -0.08,
+    speed: 0.16,
+    pulse: 1.1,
+    opacity: 0.24,
+  },
+  {
+    texture: 'wisp',
+    colorKey: 'goldColor',
+    position: [-0.16, 0.34, 0.06],
+    scale: [3.1, 1.72, 1],
+    rotation: -0.48,
+    speed: 0.13,
+    pulse: 0.9,
+    opacity: 0.2,
+  },
+  {
+    texture: 'veil',
+    colorKey: 'greenColor',
+    position: [0.44, 0.34, -0.12],
+    scale: [3.2, 1.75, 1],
+    rotation: 0.42,
+    speed: 0.12,
+    pulse: 0.9,
+    opacity: 0.14,
+  },
+  {
+    texture: 'veil',
+    colorKey: 'dustColor',
+    position: [0.05, 0.04, -0.18],
+    scale: [5.3, 3, 1],
+    rotation: 0.04,
+    speed: 0.07,
+    pulse: 1.2,
+    opacity: 0.16,
+  },
+  {
+    texture: 'core',
+    colorKey: 'coreColor',
+    position: [0.22, -0.04, 0.1],
+    scale: [2.55, 1.82, 1],
+    rotation: -0.18,
+    speed: 0.18,
+    pulse: 1.2,
+    opacity: 0.3,
+  },
+];
 
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
 }
 
-function lerpColor(
-  a: [number, number, number],
-  b: [number, number, number],
-  t: number
-): [number, number, number] {
-  return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+function createRandom(seed: number) {
+  let value = seed >>> 0;
+  return () => {
+    value = (value * 1664525 + 1013904223) >>> 0;
+    return value / 4294967296;
+  };
+}
+
+function getResponsiveLayout(mode: AppMode, width: number, height: number) {
+  const aspect = width / Math.max(height, 1);
+  const wideBias = Math.max(0, Math.min((aspect - 1.45) / 0.7, 1));
+  const shortBias = Math.max(0, Math.min((920 - height) / 240, 1));
+  const pressure = Math.max(wideBias, shortBias);
+
+  if (mode === 'chat') {
+    return {
+      yOffset: -0.18 - pressure * 0.55,
+      scaleMultiplier: 1 - pressure * 0.2,
+      opacityMultiplier: 1 - pressure * 0.12,
+    };
+  }
+
+  if (mode === 'experiment') {
+    return {
+      yOffset: -0.08 - pressure * 0.24,
+      scaleMultiplier: 1 - pressure * 0.1,
+      opacityMultiplier: 1 - pressure * 0.08,
+    };
+  }
+
+  return {
+    yOffset: 0,
+    scaleMultiplier: 1 - pressure * 0.05,
+    opacityMultiplier: 1,
+  };
+}
+
+function createNebulaTexture(seed: number, variant: 'veil' | 'wisp' | 'core') {
+  const random = createRandom(seed);
+  const size = 320;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    return new THREE.Texture();
+  }
+
+  ctx.clearRect(0, 0, size, size);
+  ctx.globalCompositeOperation = 'screen';
+
+  const strokeCount = variant === 'veil' ? 11 : variant === 'wisp' ? 8 : 6;
+  const spreadX = variant === 'core' ? 0.22 : variant === 'wisp' ? 0.42 : 0.56;
+  const spreadY = variant === 'core' ? 0.14 : variant === 'wisp' ? 0.2 : 0.3;
+  const radiusBase = variant === 'core' ? 44 : variant === 'wisp' ? 62 : 84;
+
+  for (let i = 0; i < strokeCount; i += 1) {
+    const t = i / (strokeCount - 1);
+    const x = size * (0.5 - spreadX + t * spreadX * 2 + (random() - 0.5) * 0.07);
+    const yWave = Math.sin(t * Math.PI * (variant === 'veil' ? 1.4 : 1.9) + seed * 0.17);
+    const y = size * (0.5 + yWave * spreadY + (random() - 0.5) * 0.09);
+    const radius = radiusBase * (0.8 + random() * 0.65);
+    const squish = 0.48 + random() * 0.46;
+    const rotation = (random() - 0.5) * (variant === 'veil' ? 0.9 : 0.6);
+    const alpha = variant === 'core' ? 0.19 + random() * 0.12 : 0.08 + random() * 0.08;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.scale(1, squish);
+
+    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+    gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
+    gradient.addColorStop(0.32, `rgba(255,255,255,${alpha * 0.7})`);
+    gradient.addColorStop(0.74, `rgba(255,255,255,${alpha * 0.18})`);
+    gradient.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  if (variant !== 'core') {
+    const haze = ctx.createRadialGradient(size / 2, size / 2, size * 0.06, size / 2, size / 2, size * 0.46);
+    haze.addColorStop(0, 'rgba(255,255,255,0.11)');
+    haze.addColorStop(0.38, 'rgba(255,255,255,0.05)');
+    haze.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = haze;
+    ctx.fillRect(0, 0, size, size);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.needsUpdate = true;
+  return texture;
 }
 
 export function OrganicBlob() {
+  const { size } = useThree();
   const groupRef = useRef<THREE.Group>(null);
-  const haloRef = useRef<THREE.MeshBasicMaterial>(null);
-  const auraRef = useRef<THREE.MeshBasicMaterial>(null);
-  const ringARef = useRef<THREE.MeshBasicMaterial>(null);
-  const ringBRef = useRef<THREE.MeshBasicMaterial>(null);
+  const spriteRefs = useRef<Array<THREE.Sprite | null>>([]);
   const entityState = useAppStore((state) => state.entityState);
+  const mode = useAppStore((state) => state.mode);
   const timeRef = useRef(0);
   const currentConfig = useRef(stateConfigs.idle);
 
-  const uniforms = useMemo(
+  const textures = useMemo(
     () => ({
-      uTime: { value: 0 },
-      uBreathAmp: { value: stateConfigs.idle.breathAmp },
-      uNoiseScale: { value: stateConfigs.idle.noiseScale },
-      uDeformStrength: { value: stateConfigs.idle.deformStrength },
-      uCoreColor: { value: new THREE.Color(...stateConfigs.idle.coreColor) },
-      uGlowColor: { value: new THREE.Color(...stateConfigs.idle.glowColor) },
-      uOpacity: { value: stateConfigs.idle.opacity },
+      veil: createNebulaTexture(11, 'veil'),
+      wisp: createNebulaTexture(29, 'wisp'),
+      core: createNebulaTexture(47, 'core'),
     }),
     []
   );
 
   useFrame((_, delta) => {
     const target = stateConfigs[entityState];
+    const responsiveLayout = getResponsiveLayout(mode, size.width, size.height);
     const lerpFactor = Math.min(delta * 1.2, 1);
 
     currentConfig.current = {
-      coreColor: lerpColor(currentConfig.current.coreColor, target.coreColor, lerpFactor),
-      glowColor: lerpColor(currentConfig.current.glowColor, target.glowColor, lerpFactor),
-      haloColor: lerpColor(currentConfig.current.haloColor, target.haloColor, lerpFactor),
-      breathAmp: lerp(currentConfig.current.breathAmp, target.breathAmp, lerpFactor),
-      noiseScale: lerp(currentConfig.current.noiseScale, target.noiseScale, lerpFactor),
-      deformStrength: lerp(currentConfig.current.deformStrength, target.deformStrength, lerpFactor),
-      timeSpeed: lerp(currentConfig.current.timeSpeed, target.timeSpeed, lerpFactor),
+      blueColor: target.blueColor,
+      redColor: target.redColor,
+      greenColor: target.greenColor,
+      violetColor: target.violetColor,
+      goldColor: target.goldColor,
+      coreColor: target.coreColor,
+      dustColor: target.dustColor,
       scale: lerp(currentConfig.current.scale, target.scale, lerpFactor),
       y: lerp(currentConfig.current.y, target.y, lerpFactor),
       opacity: lerp(currentConfig.current.opacity, target.opacity, lerpFactor),
-      ringOpacity: lerp(currentConfig.current.ringOpacity, target.ringOpacity, lerpFactor),
+      pulse: lerp(currentConfig.current.pulse, target.pulse, lerpFactor),
+      drift: lerp(currentConfig.current.drift, target.drift, lerpFactor),
     };
 
-    timeRef.current += delta * currentConfig.current.timeSpeed;
-
-    uniforms.uTime.value = timeRef.current;
-    uniforms.uBreathAmp.value = currentConfig.current.breathAmp;
-    uniforms.uNoiseScale.value = currentConfig.current.noiseScale;
-    uniforms.uDeformStrength.value = currentConfig.current.deformStrength;
-    uniforms.uCoreColor.value.setRGB(...currentConfig.current.coreColor);
-    uniforms.uGlowColor.value.setRGB(...currentConfig.current.glowColor);
-    uniforms.uOpacity.value = currentConfig.current.opacity;
+    timeRef.current += delta * 0.34;
+    const config = currentConfig.current;
+    const t = timeRef.current;
 
     if (groupRef.current) {
-      const bob = Math.sin(timeRef.current * 1.6) * 0.025;
-      const scalePulse = 1 + Math.sin(timeRef.current * 1.2) * 0.012;
-      groupRef.current.position.y = currentConfig.current.y + bob;
-      groupRef.current.scale.setScalar(currentConfig.current.scale * scalePulse);
-      groupRef.current.rotation.y += delta * 0.035;
-      groupRef.current.rotation.z = Math.sin(timeRef.current * 0.45) * 0.025;
+      const baseScale = config.scale * responsiveLayout.scaleMultiplier;
+      groupRef.current.position.y =
+        config.y + responsiveLayout.yOffset + Math.sin(t * 0.65) * config.drift * 0.08;
+      groupRef.current.position.x = Math.sin(t * 0.3) * config.drift * 0.14;
+      groupRef.current.scale.setScalar(baseScale);
     }
 
-    const haloColor = new THREE.Color().setRGB(...currentConfig.current.haloColor);
-    const auraColor = new THREE.Color().setRGB(...currentConfig.current.glowColor);
+    nebulaLayers.forEach((layer, index) => {
+      const sprite = spriteRefs.current[index];
+      if (!sprite) return;
 
-    if (haloRef.current) {
-      haloRef.current.color.copy(haloColor);
-      haloRef.current.opacity = currentConfig.current.opacity * 0.18;
-    }
+      const pulse = 1 + Math.sin(t * layer.speed + index * 1.3) * config.pulse * 0.1 * layer.pulse;
+      sprite.position.set(
+        layer.position[0] + Math.sin(t * layer.speed * 0.7 + index) * 0.1,
+        layer.position[1] + Math.cos(t * layer.speed * 0.8 + index * 0.6) * 0.08,
+        layer.position[2]
+      );
+      sprite.scale.set(layer.scale[0] * pulse, layer.scale[1] * pulse, 1);
 
-    if (auraRef.current) {
-      auraRef.current.color.copy(auraColor);
-      auraRef.current.opacity = currentConfig.current.opacity * 0.1;
-    }
-
-    if (ringARef.current) {
-      ringARef.current.color.copy(haloColor);
-      ringARef.current.opacity = currentConfig.current.ringOpacity;
-    }
-
-    if (ringBRef.current) {
-      ringBRef.current.color.copy(auraColor);
-      ringBRef.current.opacity = currentConfig.current.ringOpacity * 0.7;
-    }
+      const material = sprite.material as THREE.SpriteMaterial;
+      material.rotation = layer.rotation + Math.sin(t * layer.speed * 0.5 + index * 0.4) * 0.12;
+      material.color.set(config[layer.colorKey]);
+      material.opacity = layer.opacity * config.opacity * responsiveLayout.opacityMultiplier;
+    });
   });
 
   return (
     <group ref={groupRef}>
-      <mesh>
-        <sphereGeometry args={[1.16, 72, 72]} />
-        <shaderMaterial
-          vertexShader={vertexShader}
-          fragmentShader={fragmentShader}
-          uniforms={uniforms}
-          transparent
-          depthWrite={false}
-          side={THREE.FrontSide}
-        />
-      </mesh>
-
-      <mesh scale={1.34}>
-        <sphereGeometry args={[1.24, 28, 28]} />
-        <meshBasicMaterial
-          ref={haloRef}
-          color="#9ab5ff"
-          transparent
-          opacity={0.18}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
-
-      <mesh scale={1.78}>
-        <sphereGeometry args={[1.5, 20, 20]} />
-        <meshBasicMaterial
-          ref={auraRef}
-          color="#f1c48e"
-          transparent
-          opacity={0.1}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
-
-      <mesh rotation={[Math.PI * 0.42, 0, 0]} scale={[1.45, 1.05, 1.45]}>
-        <torusGeometry args={[1.56, 0.018, 12, 64]} />
-        <meshBasicMaterial
-          ref={ringARef}
-          color="#99b6ff"
-          transparent
-          opacity={0.26}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
-
-      <mesh rotation={[-Math.PI * 0.2, 0, Math.PI * 0.12]} scale={[1.88, 1.1, 1.88]}>
-        <torusGeometry args={[1.68, 0.01, 10, 52]} />
-        <meshBasicMaterial
-          ref={ringBRef}
-          color="#f6d2a0"
-          transparent
-          opacity={0.18}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
+      {nebulaLayers.map((layer, index) => (
+        <sprite
+          key={`${layer.texture}-${index}`}
+          ref={(node) => {
+            spriteRefs.current[index] = node;
+          }}
+          position={[layer.position[0], layer.position[1], layer.position[2]]}
+          scale={[layer.scale[0], layer.scale[1], layer.scale[2]]}
+        >
+          <spriteMaterial
+            map={textures[layer.texture]}
+            color={stateConfigs.idle[layer.colorKey]}
+            transparent
+            opacity={layer.opacity}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </sprite>
+      ))}
     </group>
   );
 }

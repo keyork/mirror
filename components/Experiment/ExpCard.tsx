@@ -10,8 +10,8 @@ interface Props {
 
 export function ExpCard({ experiment, onAccept, onSkip }: Props) {
   return (
-    <div className="panel-glass relative z-10 mx-auto w-full max-w-2xl rounded-[2rem] px-6 py-8 text-center md:px-10 md:py-10">
-      <div className="mx-auto max-w-[31rem] space-y-6">
+    <div className="panel-glass relative z-10 mx-auto w-full max-w-2xl rounded-[2rem] px-5 py-6 text-center sm:px-6 sm:py-7 md:px-10 md:py-10">
+      <div className="mx-auto max-w-[31rem] space-y-5 sm:space-y-6">
         <p className="orbital-label justify-center">
           {experiment.source === 'preset' ? '预设邀请' : '生成邀请'}
         </p>
@@ -33,7 +33,7 @@ export function ExpCard({ experiment, onAccept, onSkip }: Props) {
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col justify-center gap-3 md:flex-row">
+      <div className="mt-6 flex flex-col justify-center gap-3 md:mt-8 md:flex-row">
         <button
           onClick={onAccept}
           className="button-primary"

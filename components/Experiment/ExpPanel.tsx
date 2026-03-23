@@ -52,32 +52,26 @@ export function ExpPanel() {
 
   return (
     <section className="panel-glass section-shell mx-auto flex h-full w-full max-w-6xl flex-col">
-      <header className="section-head mb-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <p className="orbital-label">实验</p>
-          <h2 className="type-display text-[1.3rem] leading-[1.55] text-white/88 md:text-[1.45rem]">
-            去做一件很小的事，看看你会不会因此更靠近自己。
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="metric-tile">
+      <div className="mb-4 flex items-center justify-between gap-3 border-b border-white/8 pb-3">
+        <p className="ui-meta text-white/32">不是任务清单，只是一张你现在可以接住的小邀请。</p>
+        <div className="flex flex-wrap justify-end gap-2">
+          <div className="metric-tile min-w-[4.7rem] px-3 py-2 text-center">
             <p className="ui-meta text-white/34">可探索</p>
-            <p className="mt-1 text-2xl text-white/82">{availableExperiments.length}</p>
+            <p className="mt-1 text-base text-white/82">{availableExperiments.length}</p>
           </div>
-          <div className="metric-tile">
+          <div className="metric-tile min-w-[4.7rem] px-3 py-2 text-center">
             <p className="ui-meta text-white/34">已接受</p>
-            <p className="mt-1 text-2xl text-white/82">{acceptedExperiments.length}</p>
+            <p className="mt-1 text-base text-white/82">{acceptedExperiments.length}</p>
           </div>
-          <div className="metric-tile">
+          <div className="metric-tile min-w-[4.7rem] px-3 py-2 text-center">
             <p className="ui-meta text-white/34">已完成</p>
-            <p className="mt-1 text-2xl text-white/82">{completedExperiments.length}</p>
+            <p className="mt-1 text-base text-white/82">{completedExperiments.length}</p>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.95fr)]">
-        <div className="flex min-h-0 flex-col justify-center">
+      <div className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.95fr)]">
+        <div className="flex min-h-0 flex-col justify-center rounded-[1.7rem] border border-white/7 bg-black/10 px-2 py-2 sm:px-3 sm:py-3">
           {current ? (
             <ExpCard experiment={current} onAccept={handleAccept} onSkip={handleSkip} />
           ) : (
@@ -97,7 +91,7 @@ export function ExpPanel() {
           )}
         </div>
 
-        <div className="grid min-h-0 gap-4 lg:grid-rows-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid min-h-0 gap-4 md:grid-cols-2 xl:grid-cols-1 xl:grid-rows-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="min-h-0 overflow-y-auto scrollbar-none">
             <ExpShelf
               title="已接受"
