@@ -26,6 +26,7 @@ export default function Home() {
         <Entity />
 
         <div className="pointer-events-none fixed inset-0 z-[1]">
+          <div className="mirror-axis" />
           <div className="absolute left-[7%] top-[12%] h-52 w-52 bg-[radial-gradient(circle,_rgba(118,146,228,0.14),_rgba(118,146,228,0))] blur-3xl" />
           <div className="absolute right-[8%] top-[18%] h-40 w-40 bg-[radial-gradient(circle,_rgba(178,106,255,0.11),_rgba(178,106,255,0))] blur-3xl" />
           <div className="absolute left-[18%] bottom-[18%] h-44 w-44 bg-[radial-gradient(circle,_rgba(78,208,170,0.09),_rgba(78,208,170,0))] blur-3xl" />
@@ -39,14 +40,20 @@ export default function Home() {
             <section className="fused-rail section-shell top-rail pointer-events-auto">
               <div className="top-rail-copy">
                 <p className="orbital-label">镜 · {modeCopy.index} · {modeCopy.eyebrow}</p>
-                <p className="type-copy top-rail-title mt-2 text-[0.97rem] leading-[1.78] text-white/74">
-                  {modeCopy.title}
-                </p>
+                <div className="top-rail-title-mark mt-2">
+                  <span className="twin-sigil" aria-hidden="true" />
+                  <p
+                    className="type-copy top-rail-title echo-text echo-text-soft text-[0.97rem] leading-[1.78] text-white/74"
+                    data-echo={modeCopy.title}
+                  >
+                    {modeCopy.title}
+                  </p>
+                </div>
               </div>
 
               <div className="top-rail-status min-w-0">
                 <p className="ui-meta flex items-center gap-2 text-cyan-100/44">
-                  <span className="inline-block h-[0.3rem] w-[0.3rem] rotate-45 bg-cyan-200/60 shadow-[0_0_8px_rgba(153,182,255,0.6)]" />
+                  <span className="twin-sigil scale-[0.8]" aria-hidden="true" />
                   {status.label}
                 </p>
                 <p className="ui-meta mt-1.5 text-white/28">

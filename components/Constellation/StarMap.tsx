@@ -201,7 +201,7 @@ export function StarMap({ nodes, edges, onNodeClick }: Props) {
         onMouseLeave={() => setHoveredNodeId(null)}
         className="h-full w-full cursor-pointer"
       />
-      <div className="pointer-events-none absolute left-6 top-5 z-10 max-w-[14rem] border-b border-white/8 px-1 py-2 text-[0.72rem] leading-6 text-white/34 sm:left-7 sm:top-6">
+      <div className="pointer-events-none absolute left-6 top-5 z-10 max-w-[14rem] px-1 py-2 text-[0.72rem] leading-6 text-white/34 sm:left-7 sm:top-6">
         点击节点，查看它出现过的回声
       </div>
     </div>

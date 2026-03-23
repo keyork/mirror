@@ -62,7 +62,7 @@ export function CompleteExperimentDialog({ experiment, onClose, onConfirm }: Pro
               rows={4}
               disabled={isSaving}
               placeholder="比如：做的时候，我比想象中更轻一点。"
-              className="type-copy w-full resize-none border-t border-b border-white/10 bg-transparent px-0 py-4 text-[0.98rem] leading-7 text-amber-50/76 outline-none placeholder:text-white/22"
+              className="type-copy w-full resize-none bg-[linear-gradient(180deg,rgba(255,255,255,0.012),transparent_64%)] px-0 py-4 text-[0.98rem] leading-7 text-amber-50/76 outline-none placeholder:text-white/22"
             />
           </label>
         </div>

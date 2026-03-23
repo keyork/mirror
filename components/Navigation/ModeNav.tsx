@@ -19,11 +19,11 @@ export function ModeNav() {
           <button
             key={entry.key}
             onClick={() => setMode(entry.key)}
-            className={`relative flex min-w-0 flex-1 flex-col items-center px-3 py-2.5 text-center transition-all duration-400 sm:px-6 sm:py-3 ${
+            className={`mode-tab flex min-w-0 flex-1 flex-col items-center px-3 py-2.5 text-center transition-all duration-400 sm:px-6 sm:py-3 ${
               mode === entry.key
-                ? 'text-white/84'
+                ? 'is-active translate-y-[-1px] text-white/84'
                 : 'text-white/24 hover:text-white/52'
-            } after:absolute after:bottom-0 after:left-1/2 after:h-px after:w-[44%] after:-translate-x-1/2 after:origin-center after:bg-gradient-to-r after:from-transparent after:via-white/55 after:to-transparent after:transition-transform after:duration-400 after:content-[""] ${mode === entry.key ? 'after:scale-x-100' : 'after:scale-x-0'}`}
+            }`}
           >
             <span className="ui-meta text-cyan-100/35">
               {MODE_COPY[entry.key].index}

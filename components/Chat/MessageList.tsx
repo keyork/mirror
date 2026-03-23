@@ -29,10 +29,8 @@ export function MessageList({ messages, isLoading }: Props) {
       {messages.map((message, index) => (
         <article key={message.id} className="mx-auto flex max-w-[33rem] flex-col items-center px-4 py-9 text-center sm:px-5">
           {index > 0 && (
-            <div className="mb-10 flex items-center gap-3">
-              <div className="h-px w-10 bg-gradient-to-r from-transparent to-white/10" />
+            <div className="mb-10 flex items-center justify-center">
               <div className="star-divider" />
-              <div className="h-px w-10 bg-gradient-to-l from-transparent to-white/10" />
             </div>
           )}
 
@@ -51,10 +49,8 @@ export function MessageList({ messages, isLoading }: Props) {
 
       {isLoading && (
         <div className="mx-auto flex max-w-xl flex-col items-center py-8 text-center">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="h-px w-10 bg-gradient-to-r from-transparent to-white/8" />
+          <div className="mb-6 flex items-center justify-center">
             <div className="star-divider" />
-            <div className="h-px w-10 bg-gradient-to-l from-transparent to-white/8" />
           </div>
           <p className="ui-meta mb-5 text-white/22">
             镜 · 正在组织一个问题

@@ -48,7 +48,13 @@ export function IntroScreen() {
         <div className="intro-stage space-y-7 text-center">
           <div className="intro-mark space-y-6 text-center">
             <p className="text-[0.64rem] uppercase tracking-[0.56em] text-white/28">Mirror</p>
-            <p className="type-display text-4xl tracking-[0.36em] text-white/82 md:text-5xl">镜</p>
+            <div className="flex items-center justify-center gap-3">
+              <span className="twin-sigil scale-110" aria-hidden="true" />
+              <p className="type-display echo-text text-4xl tracking-[0.36em] text-white/82 md:text-5xl" data-echo="镜">
+                镜
+              </p>
+              <span className="twin-sigil scale-110" aria-hidden="true" />
+            </div>
             <p className="type-copy text-sm tracking-[0.18em] text-white/30">
               在失重的静默里，靠近自己
             </p>

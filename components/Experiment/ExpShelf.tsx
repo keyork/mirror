@@ -41,7 +41,7 @@ export function ExpShelf({ title, emptyText, experiments, onComplete }: Props) {
               <p className="ui-meta mt-3 text-white/28">{formatAcceptedAt(experiment.acceptedAt)}</p>
 
               {experiment.reflection ? (
-                <p className="ui-copy mt-3 border-t border-white/8 pt-3 text-[0.92rem] text-white/48">
+                <p className="ui-copy mt-3 pt-2 text-[0.92rem] text-white/48">
                   {experiment.reflection}
                 </p>
               ) : null}
