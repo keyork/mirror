@@ -2,20 +2,22 @@
 
 import { useState } from 'react';
 import { clearMirrorMemory } from '@/lib/memory';
+import { ResetMemoryDialog } from './ResetMemoryDialog';
 
 export function ResetMemoryButton() {
   const [isClearing, setIsClearing] = useState(false);
   const [isDone, setIsDone] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleReset = async () => {
-    const confirmed = window.confirm('这会清空本地保存的对话、星图与实验状态。确定继续吗？');
-    if (!confirmed || isClearing) return;
+    if (isClearing) return;
 
     setIsClearing(true);
     setIsDone(false);
 
     try {
       await clearMirrorMemory();
+      setIsOpen(false);
       setIsDone(true);
       window.setTimeout(() => setIsDone(false), 2000);
     } finally {
@@ -24,13 +26,23 @@ export function ResetMemoryButton() {
   };
 
   return (
-    <button
-      onClick={handleReset}
-      disabled={isClearing}
-      className="button-secondary min-w-[7.5rem] disabled:cursor-not-allowed disabled:opacity-40"
-      title="清空本地记忆"
-    >
-      {isClearing ? '正在清空' : isDone ? '已清空' : '清空记忆'}
-    </button>
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        disabled={isClearing}
+        className="button-secondary min-w-[7.5rem] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-40"
+        title="清空本地记忆"
+      >
+        {isClearing ? '正在清空' : isDone ? '已清空' : '清空记忆'}
+      </button>
+
+      {isOpen && (
+        <ResetMemoryDialog
+          isClearing={isClearing}
+          onClose={() => setIsOpen(false)}
+          onConfirm={handleReset}
+        />
+      )}
+    </>
   );
 }

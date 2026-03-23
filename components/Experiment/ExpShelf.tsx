@@ -22,8 +22,8 @@ function formatAcceptedAt(timestamp?: number) {
 
 export function ExpShelf({ title, emptyText, experiments, onComplete }: Props) {
   return (
-    <section className="rounded-[1.35rem] border border-white/8 bg-black/16 px-4 py-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
+    <section className="px-3 py-3 sm:px-4">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <p className="orbital-label">{title}</p>
         <span className="ui-meta">{experiments.length}</span>
       </div>
@@ -35,7 +35,7 @@ export function ExpShelf({ title, emptyText, experiments, onComplete }: Props) {
           {experiments.map((experiment) => (
             <article
               key={experiment.id}
-              className="rounded-[1.1rem] border border-white/8 bg-white/[0.02] px-4 py-4"
+              className="stream-list-row px-1 pb-3"
             >
               <p className="type-copy text-[0.98rem] leading-7 text-white/76">{experiment.prompt}</p>
               <p className="ui-meta mt-3 text-white/28">{formatAcceptedAt(experiment.acceptedAt)}</p>

@@ -96,11 +96,11 @@ export function ChatInput() {
   const showChoices = !value.trim() && !isLoading;
 
   return (
-    <div className="mt-5 border-t border-white/8 pt-5">
-      <div className="mx-auto max-w-[36rem] rounded-[1.45rem] border border-white/10 bg-black/16 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+    <div className="mt-5">
+      <div className="stream-input">
         {showChoices && choiceOptions.length > 0 && (
           <div className="mb-4">
-            <p className="ui-meta text-white/30">
+            <p className="ui-meta text-white/26">
               先选一个也行。如果都不贴，你就按自己的说法来。
             </p>
             <QuickChoices
@@ -120,15 +120,15 @@ export function ChatInput() {
           onFocus={() => setEntityState(value.trim() ? getTone(value) : 'listening')}
           onBlur={handleBlur}
           onKeyDown={handleKey}
-          placeholder="都不贴的话，就按你自己的说法来。"
+          placeholder="想到哪句，就从哪句开始。"
           rows={1}
           disabled={isLoading}
-          className="type-copy min-h-[3rem] w-full resize-none bg-transparent text-[1rem] leading-8 text-amber-50/78 outline-none placeholder:text-white/22"
+          className="type-copy min-h-[3rem] w-full resize-none bg-transparent px-1 text-[1rem] leading-8 text-amber-50/78 outline-none placeholder:text-white/22"
         />
 
-        <div className="mt-3 flex items-center justify-between gap-3">
-          <p className="ui-meta text-white/26">
-            Enter 发送，Shift + Enter 换行
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="ui-meta text-white/22">
+            Enter 发送 · Shift↵ 换行
           </p>
           <button
             onMouseDown={(event) => event.preventDefault()}

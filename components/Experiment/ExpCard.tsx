@@ -10,8 +10,8 @@ interface Props {
 
 export function ExpCard({ experiment, onAccept, onSkip }: Props) {
   return (
-    <div className="panel-glass relative z-10 mx-auto w-full max-w-2xl rounded-[2rem] px-5 py-6 text-center sm:px-6 sm:py-7 md:px-10 md:py-10">
-      <div className="mx-auto max-w-[31rem] space-y-5 sm:space-y-6">
+    <div className="relative z-10 mx-auto w-full max-w-2xl px-4 py-6 text-center sm:px-5 sm:py-8 md:px-7 md:py-12">
+      <div className="mx-auto max-w-[31rem] space-y-6 sm:space-y-7">
         <p className="orbital-label justify-center">
           {experiment.source === 'preset' ? '预设邀请' : '生成邀请'}
         </p>
@@ -19,21 +19,22 @@ export function ExpCard({ experiment, onAccept, onSkip }: Props) {
           {experiment.prompt}
         </p>
 
-        <div className="rounded-[1.5rem] border border-white/8 bg-black/16 px-5 py-5 text-left">
+        <div className="fused-note px-3 py-4 text-left sm:px-4">
           <p className="ui-kicker text-white/34">做的时候，可以留意</p>
           <p className="ui-copy mt-3 text-white/56">
             {experiment.observation}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 text-[0.78rem] text-white/32">
-          <span className="rounded-full border border-white/8 px-3 py-2">15 分钟以内</span>
-          <span className="rounded-full border border-white/8 px-3 py-2">允许拒绝</span>
-          <span className="rounded-full border border-white/8 px-3 py-2">不做打卡</span>
+        <div className="flex flex-wrap items-center justify-center gap-2.5 text-left">
+          <span className="exp-note-chip">
+            <span className="exp-note-dot bg-violet-200/55" />
+            完成时，期待你的反馈
+          </span>
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col justify-center gap-3 md:mt-8 md:flex-row">
+      <div className="mt-7 flex flex-col justify-center gap-3 md:mt-10 md:flex-row">
         <button
           onClick={onAccept}
           className="button-primary"

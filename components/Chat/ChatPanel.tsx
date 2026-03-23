@@ -17,7 +17,7 @@ export function ChatPanel() {
   const displayMessages = messages.length === 0 ? [INTRO_MESSAGE] : messages;
 
   return (
-    <section className="panel-glass section-shell mx-auto flex h-full w-full max-w-4xl flex-col pt-4 md:pt-5">
+    <section className="fused-shell section-shell mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col pt-3 md:pt-4">
       <MessageList messages={displayMessages} isLoading={isLoading} />
       <ChatInput />
     </section>

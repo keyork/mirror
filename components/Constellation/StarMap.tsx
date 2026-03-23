@@ -185,9 +185,9 @@ export function StarMap({ nodes, edges, onNodeClick }: Props) {
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden rounded-[28px] border border-white/8 bg-black/18"
+      className="relative h-full w-full overflow-hidden"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(112,145,255,0.06),_rgba(0,0,0,0)_38%),linear-gradient(180deg,_rgba(255,255,255,0.03),_transparent_24%,_transparent_78%,_rgba(255,255,255,0.02))]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(112,145,255,0.06),_rgba(0,0,0,0)_38%),linear-gradient(180deg,_rgba(255,255,255,0.025),_transparent_18%,_transparent_84%,_rgba(255,255,255,0.015))]" />
       <canvas
         ref={canvasRef}
         onClick={(event) => {
@@ -201,7 +201,7 @@ export function StarMap({ nodes, edges, onNodeClick }: Props) {
         onMouseLeave={() => setHoveredNodeId(null)}
         className="h-full w-full cursor-pointer"
       />
-      <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/8 bg-black/18 px-3 py-2 text-[0.7rem] text-white/36">
+      <div className="pointer-events-none absolute left-6 top-5 z-10 max-w-[14rem] border-b border-white/8 px-1 py-2 text-[0.72rem] leading-6 text-white/34 sm:left-7 sm:top-6">
         点击节点，查看它出现过的回声
       </div>
     </div>
