@@ -1,19 +1,19 @@
 # Mirror
 
-Mirror is a reflective AI companion for people who feel stuck in inertia and a little cut off from what they actually want. It is designed as a quiet, immersive web experience: a living central entity, slow conversational pacing, lightweight self-experiments, and a constellation view that grows from the user's own language over time.
+Mirror 是一个偏内省的 AI 陪伴产品，面向那些有些卡住、被惯性裹着走、又一时说不清自己到底想靠近什么的人。
 
-The product goal is not productivity or habit tracking. It is to help someone get a little closer to their own signals, one small step at a time.
+它不是效率工具，也不是打卡系统。Mirror 更像一个安静、缓慢、带一点失重感的空间：你可以和它说话，看自己的词语慢慢长成星图，也可以接住一张很轻的小实验卡，试着离惯性远半步。
 
-## What It Does
+## 功能概览
 
-- Offers a conversational interface with a softer, more human tone
-- Persists local memory in IndexedDB through Dexie
-- Compresses long conversations into summary context so the chat can stay coherent
-- Extracts keywords and sentiment from each reply to grow a personal constellation map
-- Suggests lightweight experiments and tracks them as available, accepted, and completed
-- Lets the user clear local memory in one action
+- 更自然、低压的人机对话体验
+- 对话记录、本地记忆、实验状态保存在浏览器本地
+- 长对话会自动压缩摘要，减少上下文失真
+- 根据对话内容生成个人星图，逐步显影高频词与关联
+- 提供轻量实验，并区分 `可探索 / 已接受 / 已完成`
+- 支持一键清空本地记忆
 
-## Tech Stack
+## 技术栈
 
 - Next.js 16 App Router
 - React 19
@@ -24,52 +24,52 @@ The product goal is not productivity or habit tracking. It is to help someone ge
 - OpenAI API
 - Tailwind CSS 4
 
-## Local Development
+## 本地运行
 
-1. Install dependencies:
+1. 安装依赖
 
 ```bash
 npm install
 ```
 
-2. Create a local env file:
+2. 创建本地环境变量文件
 
 ```bash
 cp .env.example .env.local
 ```
 
-3. Fill in the required environment variables:
+3. 填写需要的环境变量
 
 - `OPENAI_API_KEY`
-- `OPENAI_MODEL` optional, defaults to `gpt-4o`
-- `OPENAI_SUMMARY_MODEL` optional, defaults to `OPENAI_MODEL` then `gpt-4o-mini`
-- `OPENAI_BASE_URL` optional, only needed for compatible providers or proxies
+- `OPENAI_MODEL`：可选，默认 `gpt-4o`
+- `OPENAI_SUMMARY_MODEL`：可选，默认优先跟随 `OPENAI_MODEL`，否则使用 `gpt-4o-mini`
+- `OPENAI_BASE_URL`：可选，仅在使用兼容服务或代理时需要
 
-4. Start the dev server:
+4. 启动开发环境
 
 ```bash
 npm run dev
 ```
 
-5. Build for production:
+5. 构建与生产启动
 
 ```bash
 npm run build
 npm run start
 ```
 
-## Project Notes
+## 项目说明
 
-- Conversation history, constellation data, experiment state, and compressed summaries are stored locally in the browser.
-- This project currently uses the Chat Completions API through a Next.js route at [`app/api/chat/route.ts`](./app/api/chat/route.ts).
-- The product concept and design direction are documented in [`AGENT.md`](./AGENT.md).
+- 对话历史、星图数据、实验状态、上下文摘要都保存在浏览器本地。
+- 当前通过 [`app/api/chat/route.ts`](./app/api/chat/route.ts) 调用 OpenAI。
+- 产品构想和设计方向记录在 [`AGENT.md`](./AGENT.md)。
 
-## Repository Hygiene
+## 仓库注意事项
 
-- Do not commit `.env.local`
-- Do not commit `.next/` or `node_modules/`
-- If you change the prompt behavior, review both [`lib/prompts.ts`](./lib/prompts.ts) and [`app/api/chat/route.ts`](./app/api/chat/route.ts)
+- 不要提交 `.env.local`
+- 不要提交 `.next/` 和 `node_modules/`
+- 如果改了对话人格或 prompt，建议同时检查 [`lib/prompts.ts`](./lib/prompts.ts) 和 [`app/api/chat/route.ts`](./app/api/chat/route.ts)
 
 ## License
 
-Apache-2.0. See [`LICENSE`](./LICENSE).
+Apache-2.0，详见 [`LICENSE`](./LICENSE)。
