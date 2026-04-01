@@ -9,6 +9,15 @@ const openai = new OpenAI({
 });
 
 const RECENT_MESSAGE_WINDOW = 8;
+
+const MODELS_REQUIRING_TEMPERATURE_ONE = ['o1', 'o3', 'kimi'];
+
+function getValidTemperature(model: string, desiredTemperature: number): number {
+  const modelName = model.toLowerCase();
+  return MODELS_REQUIRING_TEMPERATURE_ONE.some(m => modelName.includes(m))
+    ? 1
+    : desiredTemperature;
+}
 const SUMMARY_TRIGGER_COUNT = 14;
 
 type ChatRole = 'user' | 'ai';
@@ -44,10 +53,11 @@ function formatHistory(history: HistoryMessage[]) {
 
 async function summarizeHistory(existingSummary: string, messages: HistoryMessage[]) {
   const formattedHistory = formatHistory(messages);
+  const model = process.env.OPENAI_SUMMARY_MODEL || process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
   const response = await openai.chat.completions.create({
-    model: process.env.OPENAI_SUMMARY_MODEL || process.env.OPENAI_MODEL || 'gpt-4o-mini',
-    temperature: 0.3,
+    model,
+    temperature: getValidTemperature(model, 0.3),
     messages: [
       { role: 'system', content: MIRROR_CONTEXT_SUMMARY_PROMPT },
       {
@@ -113,10 +123,11 @@ export async function POST(req: Request) {
 
     contextMessages.push({ role: 'user', content: message });
 
+    const model = process.env.OPENAI_MODEL || 'gpt-4o';
     const response = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o',
+      model,
       messages: contextMessages,
-      temperature: 0.8,
+      temperature: getValidTemperature(model, 0.8),
     });
 
     const text = response.choices[0].message.content || '';
