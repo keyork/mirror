@@ -578,11 +578,12 @@ select {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 1rem;
-  padding: 0.9rem 0 1rem;
+  gap: 1rem 1.4rem;
+  padding: 1.15rem clamp(1rem, 2.2vw, 1.45rem) 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.075);
   background:
     linear-gradient(90deg, rgba(213, 180, 134, 0.05), transparent 70%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.012), transparent);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.008));
 }
 
 .settings-form {

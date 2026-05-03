@@ -5,11 +5,12 @@ import { useConstellStore } from '@/stores/useConstellStore';
 import { useExpStore } from '@/stores/useExpStore';
 
 export async function clearMirrorMemory() {
-  await db.transaction('rw', [db.messages, db.nodes, db.edges, db.experiments, db.meta], async () => {
+  await db.transaction('rw', [db.messages, db.nodes, db.edges, db.experiments, db.memories, db.meta], async () => {
     await db.messages.clear();
     await db.nodes.clear();
     await db.edges.clear();
     await db.experiments.clear();
+    await db.memories.clear();
     await db.meta.clear();
   });
 

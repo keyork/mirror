@@ -76,6 +76,7 @@ npm run start
 - 对话历史、星图数据、实验状态、上下文摘要都保存在浏览器本地。
 - 页面「设置」里的 LLM 配置也保存在当前浏览器本地。API Key 不会写入仓库或 `.env`，但发起对话时会随请求发送到本项目的 `/api/chat` 服务端路由。
 - 如果没有填写完整的 `URL / Model / API Key`，首页会提示先去设置页填写，并暂时禁用输入框。
+- 上下文管理机制记录在 [`docs/context-management.md`](./docs/context-management.md)。
 - 当前通过 [`app/api/chat/route.ts`](./app/api/chat/route.ts) 调用 OpenAI。
 - 产品构想和设计方向记录在 [`AGENT.md`](./AGENT.md)。
 

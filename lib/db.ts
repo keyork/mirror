@@ -39,6 +39,16 @@ export interface Experiment {
   reflection?: string;
 }
 
+export interface MemoryItem {
+  id: string;
+  text: string;
+  sourceMessageIds: string[];
+  tags: string[];
+  importance: number;
+  createdAt: number;
+  lastUsedAt?: number;
+}
+
 export interface UserMeta {
   id: 'singleton';
   threadId: string;
@@ -56,6 +66,7 @@ export class MirrorDB extends Dexie {
   nodes!: Table<ConstellNode>;
   edges!: Table<ConstellEdge>;
   experiments!: Table<Experiment>;
+  memories!: Table<MemoryItem>;
   meta!: Table<UserMeta>;
 
   constructor() {
@@ -105,6 +116,15 @@ export class MirrorDB extends Dexie {
             replyOptions: Array.isArray(meta.replyOptions) ? meta.replyOptions : [],
           });
         }
+      });
+    this.version(4)
+      .stores({
+        messages: 'id, threadId, timestamp',
+        nodes: 'id, label, category, firstSeen',
+        edges: 'id, source, target',
+        experiments: 'id, status',
+        memories: 'id, createdAt, lastUsedAt, importance, *tags',
+        meta: 'id',
       });
   }
 }

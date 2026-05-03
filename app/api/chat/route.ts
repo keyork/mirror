@@ -35,6 +35,13 @@ interface LlmSettings {
   apiKey?: string;
 }
 
+interface RelevantMemory {
+  id: string;
+  text: string;
+  tags?: string[];
+  importance?: number;
+}
+
 interface ResolvedLlmConfig {
   client: OpenAI;
   model: string;
@@ -65,11 +72,18 @@ function resolveLlmConfig(settings?: LlmSettings): ResolvedLlmConfig {
 
 function postProcessMirrorReply(reply: string) {
   return reply
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/(?:^|\n)\s*(?:思考过程|推理过程|分析如下|我的分析|我的判断依据)\s*[:：][\s\S]*?(?=\n{2,}|$)/g, '')
+    .replace(/(?:^|\n)\s*(?:step[-\s]?by[-\s]?step|chain of thought)\s*[:：][\s\S]*?(?=\n{2,}|$)/gi, '')
     .replace(/你应该/g, '也许可以')
     .replace(/你需要/g, '可以先')
+    .replace(/你必须/g, '可以')
+    .replace(/你要学会/g, '可以试着看看')
     .replace(/不妨/g, '可以')
-    .replace(/难道不是吗\??/g, '你会这么觉得吗？')
     .replace(/这说明你/g, '这像是在说')
+    .replace(/真正的问题是/g, '这里可能卡着的是')
+    .replace(/核心原因是/g, '也许有一部分是')
+    .replace(/难道不是吗\??/g, '你会这么觉得吗？')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
@@ -78,6 +92,18 @@ function formatHistory(history: HistoryMessage[]) {
   return history
     .map((item) => `${item.role === 'user' ? '用户' : '镜'}：${item.content}`)
     .join('\n\n');
+}
+
+function formatRelevantMemories(memories: RelevantMemory[]) {
+  return memories
+    .slice(0, 5)
+    .map((memory, index) => {
+      const tags = Array.isArray(memory.tags) && memory.tags.length > 0
+        ? ` 标签：${memory.tags.slice(0, 6).join('、')}`
+        : '';
+      return `${index + 1}. ${memory.text.slice(0, 360)}${tags}`;
+    })
+    .join('\n');
 }
 
 async function summarizeHistory(existingSummary: string, messages: HistoryMessage[], llm: ResolvedLlmConfig) {
@@ -111,6 +137,7 @@ export async function POST(req: Request) {
       summary = '',
       compressedMessageCount = 0,
       llmSettings,
+      relevantMemories = [],
     }: {
       threadId?: string | null;
       message: string;
@@ -118,6 +145,7 @@ export async function POST(req: Request) {
       summary?: string;
       compressedMessageCount?: number;
       llmSettings?: LlmSettings;
+      relevantMemories?: RelevantMemory[];
     } = await req.json();
 
     const llm = resolveLlmConfig(llmSettings);
@@ -144,6 +172,17 @@ export async function POST(req: Request) {
       contextMessages.push({
         role: 'system',
         content: `以下是截至目前的长期对话摘要，仅供你延续上下文时参考：\n${nextSummary}`,
+      });
+    }
+
+    if (Array.isArray(relevantMemories) && relevantMemories.length > 0) {
+      contextMessages.push({
+        role: 'system',
+        content: [
+          '以下是从本地长期记忆中检索到的少量相关片段。',
+          '只在它们确实贴合用户当前表达时轻轻参考，不要直接复述，不要声称你在查看记忆。',
+          formatRelevantMemories(relevantMemories),
+        ].join('\n'),
       });
     }
 
