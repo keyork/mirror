@@ -5,6 +5,7 @@ import { INTRO_MESSAGE } from '@/lib/chatIntro';
 import { extractReplyOptions } from '@/lib/replyOptions';
 import { useAppStore } from '@/stores/useAppStore';
 import { useChatStore } from '@/stores/useChatStore';
+import { isLlmSettingsComplete, useLlmSettingsStore } from '@/stores/useLlmSettingsStore';
 import { QuickChoices } from './QuickChoices';
 
 const DEEP_TONE_REGEX = /意义|为什么|空虚|迷茫|害怕|疲惫|不想|不知道|选择/;
@@ -13,15 +14,18 @@ export function ChatInput() {
   const [value, setValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const blurTimerRef = useRef<number | null>(null);
-  const { mode, setEntityState } = useAppStore();
+  const { mode, setMode, setEntityState } = useAppStore();
   const { messages, replyOptions, sendMessage, isLoading } = useChatStore();
+  const llmSettings = useLlmSettingsStore();
+  const hasLlmSettings = llmSettings.hasHydrated && isLlmSettingsComplete(llmSettings);
+  const isSettingsHydrating = !llmSettings.hasHydrated;
 
   const getTone = (input: string) =>
     input.length > 40 || DEEP_TONE_REGEX.test(input) ? 'deep' : 'listening';
 
   const submitMessage = async (content: string) => {
     const trimmed = content.trim();
-    if (!trimmed || isLoading) return;
+    if (!trimmed || isLoading || !hasLlmSettings) return;
 
     setValue('');
 
@@ -36,7 +40,7 @@ export function ChatInput() {
   };
 
   useEffect(() => {
-    if (mode !== 'chat' || isLoading) return;
+    if (mode !== 'chat' || isLoading || !hasLlmSettings) return;
 
     const focusTextarea = () => {
       textareaRef.current?.focus();
@@ -45,7 +49,7 @@ export function ChatInput() {
 
     const frame = window.requestAnimationFrame(focusTextarea);
     return () => window.cancelAnimationFrame(frame);
-  }, [mode, isLoading, setEntityState, value]);
+  }, [mode, isLoading, hasLlmSettings, setEntityState, value]);
 
   useEffect(() => {
     return () => {
@@ -68,7 +72,7 @@ export function ChatInput() {
   };
 
   const handleBlur = () => {
-    if (mode !== 'chat' || isLoading) return;
+    if (mode !== 'chat' || isLoading || !hasLlmSettings) return;
 
     blurTimerRef.current = window.setTimeout(() => {
       textareaRef.current?.focus();
@@ -78,6 +82,17 @@ export function ChatInput() {
 
   const handleSubmit = async () => {
     await submitMessage(value);
+  };
+
+  const handleChoiceSelect = (nextValue: string) => {
+    if (isSettingsHydrating) return;
+
+    if (!hasLlmSettings) {
+      setMode('settings');
+      return;
+    }
+
+    void submitMessage(nextValue);
   };
 
   const handleKey = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -106,9 +121,7 @@ export function ChatInput() {
             <QuickChoices
               options={choiceOptions}
               disabled={isLoading}
-              onSelect={(nextValue) => {
-                void submitMessage(nextValue);
-              }}
+              onSelect={handleChoiceSelect}
             />
           </div>
         )}
@@ -120,24 +133,46 @@ export function ChatInput() {
           onFocus={() => setEntityState(value.trim() ? getTone(value) : 'listening')}
           onBlur={handleBlur}
           onKeyDown={handleKey}
-          placeholder="想到哪句，就从哪句开始。"
+          placeholder={
+            hasLlmSettings
+              ? '想到哪句，就从哪句开始。'
+              : isSettingsHydrating
+                ? '正在读取 LLM 设置。'
+                : '先去设置里填写 LLM 连接信息。'
+          }
           rows={1}
-          disabled={isLoading}
+          disabled={isLoading || !hasLlmSettings}
           className="type-copy min-h-[3rem] w-full resize-none bg-transparent px-1 text-[1rem] leading-8 text-amber-50/78 outline-none placeholder:text-white/22"
         />
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <p className="ui-meta text-white/22">
-            Enter 发送 · Shift↵ 换行
+            {hasLlmSettings
+              ? 'Enter 发送 · Shift↵ 换行'
+              : isSettingsHydrating
+                ? '正在读取本地设置'
+                : 'URL、Model、API Key 还没有填完整'}
           </p>
-          <button
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={handleSubmit}
-            disabled={!value.trim() || isLoading}
-            className="button-secondary disabled:cursor-not-allowed disabled:opacity-25"
-          >
-            把它交给镜
-          </button>
+          {hasLlmSettings ? (
+            <button
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={handleSubmit}
+              disabled={!value.trim() || isLoading}
+              className="button-secondary disabled:cursor-not-allowed disabled:opacity-25"
+            >
+              把它交给镜
+            </button>
+          ) : (
+            <button
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => setMode('settings')}
+              disabled={isSettingsHydrating}
+              className="button-secondary disabled:cursor-not-allowed disabled:opacity-35"
+            >
+              {isSettingsHydrating ? '读取中' : '去设置'}
+            </button>
+          )}
         </div>
       </div>
     </div>

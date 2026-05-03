@@ -3,11 +3,6 @@ import OpenAI from 'openai';
 import { MIRROR_CONTEXT_SUMMARY_PROMPT, MIRROR_SYSTEM_PROMPT } from '@/lib/prompts';
 import { extractReplyOptions, normalizeReplyOptions } from '@/lib/replyOptions';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL || undefined,
-});
-
 const RECENT_MESSAGE_WINDOW = 8;
 
 const MODELS_REQUIRING_TEMPERATURE_ONE = ['o1', 'o3', 'kimi'];
@@ -34,6 +29,40 @@ interface MirrorMetadata {
   suggestions?: string[];
 }
 
+interface LlmSettings {
+  url?: string;
+  model?: string;
+  apiKey?: string;
+}
+
+interface ResolvedLlmConfig {
+  client: OpenAI;
+  model: string;
+  summaryModel: string;
+}
+
+function cleanSetting(value?: string) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function resolveLlmConfig(settings?: LlmSettings): ResolvedLlmConfig {
+  const apiKey = cleanSetting(settings?.apiKey) || process.env.OPENAI_API_KEY || '';
+  const baseURL = cleanSetting(settings?.url) || process.env.OPENAI_BASE_URL || undefined;
+  const model = cleanSetting(settings?.model) || process.env.OPENAI_MODEL || 'gpt-4o';
+  const summaryModel = cleanSetting(settings?.model) || process.env.OPENAI_SUMMARY_MODEL || process.env.OPENAI_MODEL || 'gpt-4o-mini';
+
+  if (!apiKey) {
+    throw new Error('Missing LLM API key');
+  }
+
+  return {
+    // The client is built per request because browser-local settings may override env defaults.
+    client: new OpenAI({ apiKey, baseURL }),
+    model,
+    summaryModel,
+  };
+}
+
 function postProcessMirrorReply(reply: string) {
   return reply
     .replace(/你应该/g, '也许可以')
@@ -51,11 +80,11 @@ function formatHistory(history: HistoryMessage[]) {
     .join('\n\n');
 }
 
-async function summarizeHistory(existingSummary: string, messages: HistoryMessage[]) {
+async function summarizeHistory(existingSummary: string, messages: HistoryMessage[], llm: ResolvedLlmConfig) {
   const formattedHistory = formatHistory(messages);
-  const model = process.env.OPENAI_SUMMARY_MODEL || process.env.OPENAI_MODEL || 'gpt-4o-mini';
+  const model = llm.summaryModel;
 
-  const response = await openai.chat.completions.create({
+  const response = await llm.client.chat.completions.create({
     model,
     temperature: getValidTemperature(model, 0.3),
     messages: [
@@ -81,13 +110,17 @@ export async function POST(req: Request) {
       history = [],
       summary = '',
       compressedMessageCount = 0,
+      llmSettings,
     }: {
       threadId?: string | null;
       message: string;
       history?: HistoryMessage[];
       summary?: string;
       compressedMessageCount?: number;
+      llmSettings?: LlmSettings;
     } = await req.json();
+
+    const llm = resolveLlmConfig(llmSettings);
 
     let nextSummary = summary.trim();
     let nextCompressedMessageCount = compressedMessageCount;
@@ -97,7 +130,7 @@ export async function POST(req: Request) {
       const messagesToCompress = history.slice(0, Math.max(0, history.length - RECENT_MESSAGE_WINDOW));
 
       if (messagesToCompress.length > 0) {
-        nextSummary = await summarizeHistory(nextSummary, messagesToCompress);
+        nextSummary = await summarizeHistory(nextSummary, messagesToCompress, llm);
         nextCompressedMessageCount += messagesToCompress.length;
         recentHistory = history.slice(messagesToCompress.length);
       }
@@ -123,8 +156,8 @@ export async function POST(req: Request) {
 
     contextMessages.push({ role: 'user', content: message });
 
-    const model = process.env.OPENAI_MODEL || 'gpt-4o';
-    const response = await openai.chat.completions.create({
+    const model = llm.model;
+    const response = await llm.client.chat.completions.create({
       model,
       messages: contextMessages,
       temperature: getValidTemperature(model, 0.8),
@@ -168,6 +201,10 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     console.error('Chat API error:', err);
-    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
+    const message = err instanceof Error && err.message === 'Missing LLM API key'
+      ? '请先在设置里填写 LLM API Key，或配置服务端 OPENAI_API_KEY。'
+      : 'Failed to process request';
+    const status = err instanceof Error && err.message === 'Missing LLM API key' ? 400 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

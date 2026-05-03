@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { nanoid } from 'nanoid';
 import { db, Message } from '@/lib/db';
+import { useLlmSettingsStore } from '@/stores/useLlmSettingsStore';
 
 interface ChatStore {
   messages: Message[];
@@ -12,6 +13,14 @@ interface ChatStore {
   loadMessages: () => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
   initThread: () => Promise<void>;
+}
+
+function getErrorReply(error: unknown) {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return '刚刚断了一下。\n\n你把那句话再发我一次，好吗？';
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -50,6 +59,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   sendMessage: async (content: string) => {
     const { threadId, messages, conversationSummary, compressedMessageCount } = get();
+    const llmSettings = useLlmSettingsStore.getState();
     set({ isLoading: true, replyOptions: [] });
 
     const history = messages
@@ -76,13 +86,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           history,
           summary: conversationSummary,
           compressedMessageCount,
+          llmSettings: {
+            url: llmSettings.url,
+            model: llmSettings.model,
+            apiKey: llmSettings.apiKey,
+          },
         }),
       });
 
       const data = await response.json();
 
-      if (data.error) {
-        throw new Error(data.error);
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to process request');
       }
 
       const nextThreadId = data.threadId;
@@ -162,7 +177,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const fallbackMessage: Message = {
         id: nanoid(),
         role: 'ai',
-        content: '刚刚断了一下。\n\n你把那句话再发我一次，好吗？',
+        content: getErrorReply(error),
         timestamp: Date.now(),
         threadId: threadId || '',
       };

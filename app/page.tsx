@@ -7,6 +7,7 @@ import { ExpPanel } from '@/components/Experiment/ExpPanel';
 import { IntroScreen } from '@/components/Intro/IntroScreen';
 import { ResetMemoryButton } from '@/components/Memory/ResetMemoryButton';
 import { ModeNav } from '@/components/Navigation/ModeNav';
+import { SettingsPanel } from '@/components/Settings/SettingsPanel';
 import { ENTITY_STATUS, MODE_COPY } from '@/lib/modeContent';
 import { useAppStore } from '@/stores/useAppStore';
 
@@ -72,6 +73,7 @@ export default function Home() {
               {mode === 'chat' && <ChatPanel />}
               {mode === 'constellation' && <ConstellPanel />}
               {mode === 'experiment' && <ExpPanel />}
+              {mode === 'settings' && <SettingsPanel />}
             </div>
           </div>
 

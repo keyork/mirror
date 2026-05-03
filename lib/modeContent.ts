@@ -27,6 +27,12 @@ export const MODE_COPY: Record<
     title: '不是任务，是一张轻轻递来的邀请。',
     description: '这些实验不要求证明什么，只邀请你离惯性远一点，看看身体会不会先知道答案。',
   },
+  settings: {
+    index: '04',
+    eyebrow: '模型与连接',
+    title: '把镜连接到你想使用的语言模型。',
+    description: '这里保存模型地址、名称和密钥，只在发起对话时使用。',
+  },
 };
 
 export const ENTITY_STATUS: Record<

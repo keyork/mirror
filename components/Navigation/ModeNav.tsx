@@ -7,6 +7,7 @@ const modes: { key: AppMode; label: string }[] = [
   { key: 'chat', label: '对话' },
   { key: 'constellation', label: '星图' },
   { key: 'experiment', label: '实验' },
+  { key: 'settings', label: '设置' },
 ];
 
 export function ModeNav() {

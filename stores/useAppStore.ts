@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type EntityState = 'idle' | 'listening' | 'responding' | 'deep' | 'constellation' | 'experiment';
-export type AppMode = 'chat' | 'constellation' | 'experiment';
+export type AppMode = 'chat' | 'constellation' | 'experiment' | 'settings';
 
 interface AppStore {
   mode: AppMode;
@@ -20,6 +20,7 @@ export const useAppStore = create<AppStore>((set) => ({
     set({ mode });
     if (mode === 'constellation') set({ entityState: 'constellation' });
     else if (mode === 'experiment') set({ entityState: 'experiment' });
+    else if (mode === 'settings') set({ entityState: 'idle' });
     else set({ entityState: 'idle' });
   },
   setEntityState: (entityState) => set({ entityState }),

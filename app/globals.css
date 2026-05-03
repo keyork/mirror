@@ -573,6 +573,58 @@ select {
   margin-top: 0.35rem;
 }
 
+.llm-missing-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.9rem 0 1rem;
+  background:
+    linear-gradient(90deg, rgba(213, 180, 134, 0.05), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.012), transparent);
+}
+
+.settings-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.settings-field {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.settings-input {
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012)),
+    rgba(5, 8, 16, 0.28);
+  padding: 0 0.9rem;
+  color: rgba(255, 248, 236, 0.84);
+  font-family: var(--font-copy);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  outline: none;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.settings-input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.settings-input:focus {
+  border-color: rgba(153, 182, 255, 0.28);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.016)),
+    rgba(8, 12, 24, 0.42);
+}
+
 .top-rail-copy {
   min-width: 0;
 }
